@@ -1,4 +1,3 @@
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -528,7 +527,7 @@ def main(verbose=False, num_runs=10):
     use_cpu = False  
     device = torch.device('cpu' if use_cpu else ('cuda' if torch.cuda.is_available() else 'cpu'))
     
-    output_dir = "ss_11/cora/output/mvgrl_improved_8"
+    output_dir = "mvgrl"
     os.makedirs(output_dir, exist_ok=True)
     
     results = []
