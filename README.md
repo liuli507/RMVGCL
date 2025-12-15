@@ -118,7 +118,7 @@ Results are saved in the `attack/` directory, including:
 ## Datasets
 
 Supports the following datasets:
-- Cora (default)
+- Cora
 - CiteSeer
 - PubMed
 - Amazon Computers
