@@ -117,10 +117,11 @@ Results are saved in the `attack/` directory, including:
 
 ## Datasets
 
-Supports Planetoid datasets:
+Supports the following datasets:
 - Cora (default)
 - CiteSeer
 - PubMed
+- Amazon Computers
 
 ## Outputs
 
