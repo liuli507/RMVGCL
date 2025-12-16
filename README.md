@@ -1,6 +1,6 @@
 # RMVGCL - Robust Multi-View Graph Contrastive Learning
 
-A multi-view graph contrastive learning approach for node classification with adversarial robustness evaluation.
+RMVGCL: Principled Multi-View and Hierarchical Graph Contrastive Learning for Robust and Effective Representation
 
 ## Project Structure
 
@@ -17,74 +17,30 @@ A multi-view graph contrastive learning approach for node classification with ad
 pip install -r requirements.txt
 ```
 
-## Core Components
+## Core Code
 
-### rmvgcl.py
+### `rmvgcl.py`
 
-- **GNN / Encoder**: Multi-layer GCN encoder with batch normalization and dropout
-- **Discriminator**: Node-graph discriminator for contrastive learning
-- **NodeClassifier**: Classification head for node classification
-- **SignificantSubgraphGenerator**: Extracts significant subgraphs based on PageRank and feature similarity
-- **Knowledge Subgraph Extraction**: Builds semantic subgraphs using feature similarity, label similarity, and common neighbors
-- **Heat Diffusion**: Computes global diffusion adjacency matrix
+- **Model (`RMVGCL`)**: three GNN encoders (two local views + one global diffusion view) and one shared MLP to get node embeddings.
+- **Classifier (`NodeClassifier`)**: an MLP that takes the fused embedding and outputs node labels.
+- **Contrastive head (`Discriminator`)**: a bilinear scorer that distinguishes positive node pairs (same node across views) from negatives (shuffled).
+- **Subgraph construction**:
+  - `SignificantSubgraphGenerator`: builds a structural subgraph with important nodes/edges.
+  - `Semantic subgraph`: builds a semantic subgraph using feature and label similarity.
+  - `get_diffusion_adj`: builds a global diffusion graph by heat diffusion.
+- **Training (`train_rmvgcl`)**: optimizes contrastive loss + classification loss with early stopping and reports accuracies.
 
-**Key Features**:
-- Three-view learning: Significant subgraph view + Knowledge subgraph view + Global diffusion view
-- Joint training with contrastive loss and classification loss
-- Early stopping mechanism
+### `attack.py`
 
-### attack.py
+- **`poison_data`**: adds noise to node features and perturbs edges.
+- **`flip_labels`**: randomly flips a small portion of node labels.
+- **`prune_model`**: randomly prunes model weights.
+- **`run_attack_experiments`**: runs RMVGCL under different attack combinations and saves results/plots.
 
-Adversarial robustness evaluation:
+### `requirements.txt`
 
-| Attack Method | Description |
-|--------------|-------------|
-| `poison_data` | Data poisoning: feature noise injection + edge perturbation |
-| `flip_labels` | Label flipping: randomly flip node labels |
-| `prune_model` | Model pruning: randomly zero out model weights |
+Python dependencies for running RMVGCL and attack experiments.
 
-**Experiment Settings**:
-- baseline (no attack)
-- flip (label flipping only)
-- prune (model pruning only)
-- poison_flip (poisoning + flipping)
-- poison_prune (poisoning + pruning)
-- flip_prune (flipping + pruning)
-- poison_flip_prune (all combined)
-
-## Quick Start
-
-### Train Model
-
-```python
-from rmvgcl import load_data, RMVGCL, train_rmvgcl
-import torch
-
-# Load data
-data = load_data(dataset_name='cora')
-
-# Initialize model
-model = RMVGCL(
-    in_ft=data['num_features'],
-    hid_ft=256,
-    out_ft=64,
-    num_classes=data['num_classes'],
-    num_layers=2,
-    dropout=0.3
-)
-
-# Train
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0005, weight_decay=1e-4)
-model, history, metrics = train_rmvgcl(
-    model=model,
-    data=data,
-    optimizer=optimizer,
-    n_epochs=200,
-    verbose=True
-)
-
-print(f"Test Accuracy: {metrics['best_test_acc']:.4f}")
-```
 
 ### Run Full Experiments
 
@@ -99,9 +55,6 @@ python rmvgcl.py
 python attack.py
 ```
 
-Results are saved in the `attack/` directory, including:
-- Summary results for each attack setting (CSV)
-- Training curve comparison plots across different attacks
 
 ## Hyperparameters
 
@@ -118,14 +71,19 @@ Results are saved in the `attack/` directory, including:
 ## Datasets
 
 Supports the following datasets:
-- Cora
+- Cora (default)
 - CiteSeer
 - PubMed
 - Amazon Computers
 
-## Outputs
+## Baseline
 
-After training:
-- `rmvgcl/summary_results.csv` - Averaged results over multiple runs
-- `attack/all_attacks_summary.csv` - Comparison results across all attack settings
-- `attack/compare_attack_histories.png` - Attack comparison visualization
+
+We compare our method with the following representative GNN and graph contrastive learning methods:
+
+- **GAT** – Graph Attention Network.
+- **APPNP** – Predict then propagate：Graph neural networks meet personalized pagerank.
+- **GPRGNN** – Adaptive universal generalized pagerank graph neural network.
+- **DGI** – Deep Graph Infomax.
+- **MVGRL** – Multi-View Graph Representation Learning.
+- **ReGCL** – Rethinking Message Passing in Graph Contrastive Learning.
